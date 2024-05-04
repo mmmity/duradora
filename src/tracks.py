@@ -88,7 +88,7 @@ class TrackHandler:
         '''
         return self.controller.find_track(uuid)
 
-    def stream_track(self, uuid: str) -> Optional[StreamingResponse]:
+    async def stream_track(self, uuid: str) -> Optional[StreamingResponse]:
         '''
         Streams track with uuid if its file exists
         '''
