@@ -1,7 +1,7 @@
 '''
 A higher-level API for SQL table "tracks"
 '''
-from typing import List, Tuple, Optional
+from typing import Tuple, Optional
 import uuid
 
 import sqlite3

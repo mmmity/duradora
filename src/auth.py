@@ -65,7 +65,8 @@ class Auth:
         Creates JWT from dictionary and signs it
         '''
         to_encode: dict = data.copy()
-        expires: datetime = datetime.now(timezone.utc) + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires: datetime = datetime.now(timezone.utc)
+        expires += timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
 
         to_encode.update({'exp': expires})
         encoded_jwt: str = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
