@@ -1,3 +1,7 @@
+'''
+Some constants
+TODO: move to TOML
+'''
 SALT = b'ilovedora'
 SECRET_KEY = 'zakryvayudverkvartiryotkluchayuvsemobily'
 ALGORITHM = "HS256"

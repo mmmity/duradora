@@ -1,3 +1,6 @@
+'''
+Initializes database if it is not already initialized
+'''
 import sqlite3
 from src.db.user_controller import UserController
 from src import config

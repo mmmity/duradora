@@ -1,9 +1,17 @@
+'''
+Tests for hashes module
+'''
 import unittest
 from src.hashes import SHA256Hasher
 
 class TestSHA256Hasher(unittest.TestCase):
-
+    '''
+    Class for testing SHA256Hasher
+    '''
     def test_hasher(self):
+        '''
+        Basic functionality tests
+        '''
         hasher = SHA256Hasher(b'salt_from_Piter')
 
         self.assertEqual(hasher.hexdigest('sample'), hasher.hexdigest('sample'))

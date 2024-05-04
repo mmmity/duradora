@@ -1,9 +1,10 @@
 '''
 A higher-level API for SQL table "users"
 '''
+from typing import Optional, Tuple
+
 import sqlite3
 from pydantic import BaseModel
-from typing import Optional, Tuple
 
 class User(BaseModel):
     '''
@@ -34,9 +35,10 @@ class UserController:
         '''
         Inserts new user into table "users"
         '''
-        self.cur.execute('INSERT INTO users VALUES(?, ?, ?)', (user.username, user.password, user.is_admin))
+        self.cur.execute('INSERT INTO users VALUES(?, ?, ?)',
+                         (user.username, user.password, user.is_admin))
         self.con.commit()
-    
+
     def user_from_tuple(self, t: Tuple[str, str, bool]):
         '''
         Converts unnamed tuple with values in right order into user
@@ -52,10 +54,12 @@ class UserController:
         out = self.cur.fetchone()
         if out is not None:
             return self.user_from_tuple(out)
+        return None
 
     def update_user(self, user: User):
         '''
         Updates user with user.username with new values
         '''
-        self.cur.execute('UPDATE users SET password = ?, is_admin = ? WHERE username = ?', (user.password, user.is_admin, user.username))
+        self.cur.execute('UPDATE users SET password = ?, is_admin = ? WHERE username = ?',
+                         (user.password, user.is_admin, user.username))
         self.con.commit()

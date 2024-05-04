@@ -1,3 +1,6 @@
+'''
+Contains models representing generic API responses
+'''
 from pydantic import BaseModel
 
 class Error(BaseModel):
