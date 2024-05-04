@@ -53,7 +53,7 @@ class Auth:
         '''
         Checks if user with such password exists. If does, returns User, otherwise None
         '''
-        user = self.get_user(username)
+        user: Optional[User] = self.get_user(username)
         if user is None:
             return None
         if not self.hasher.verify(password, user.password):
@@ -64,11 +64,11 @@ class Auth:
         '''
         Creates JWT from dictionary and signs it
         '''
-        to_encode = data.copy()
-        expires = datetime.now(timezone.utc) + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+        to_encode: dict = data.copy()
+        expires: datetime = datetime.now(timezone.utc) + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
 
         to_encode.update({'exp': expires})
-        encoded_jwt = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+        encoded_jwt: str = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
         return encoded_jwt
 
     async def get_current_user(self, token: Annotated[str, Depends(oauth2_scheme)]) -> User | Error:
@@ -77,14 +77,14 @@ class Auth:
         '''
         creds_error = Error(error='invalid credentials')
         try:
-            payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+            payload: dict = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
             username: str = payload.get('username')
             if username is None:
                 return creds_error
         except JWTError:
             return creds_error
 
-        user = self.get_user(username)
+        user: Optional[User] = self.get_user(username)
         if user is None:
             return creds_error
         return user
@@ -108,7 +108,7 @@ class Auth:
         '''
         Tries to authorize user with password. If succeeds, returns token for user
         '''
-        auth = self.authenticate_user(user.username, user.password)
+        auth: Optional[User] = self.authenticate_user(user.username, user.password)
         if auth is None:
             return Error(error='incorrect username or password')
         token = self.create_access_token(data={'username': user.username})
