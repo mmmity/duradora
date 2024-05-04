@@ -4,10 +4,11 @@ from typing import Annotated
 
 from src.db.user_controller import User, UserController
 from src.db import userController
-from src import auth
+from src.auth import Auth
 
 from pydantic import BaseModel
 
+auth = Auth()
 app = FastAPI()
 
 class Error(BaseModel):
