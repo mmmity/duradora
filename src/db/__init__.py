@@ -15,13 +15,13 @@ cur.execute('''CREATE TABLE IF NOT EXISTS users(
 )''')
 
 cur.execute('''CREATE TABLE IF NOT EXISTS tracks(
-                id STRING PRIMARY KEY,
+                uuid STRING PRIMARY KEY,
                 title STRING,
                 artists STRING
 )''')
 
 cur.execute('''CREATE TABLE IF NOT EXISTS playlists(
-                id STRING PRIMARY KEY,
+                uuid STRING PRIMARY KEY,
                 title STRING,
                 songs STRING,
                 creator STRING,
