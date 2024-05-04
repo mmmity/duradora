@@ -14,7 +14,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS users(
                 is_admin BOOLEAN
 )''')
 
-cur.execute('''CREATE TABLE IF NOT EXISTS songs(
+cur.execute('''CREATE TABLE IF NOT EXISTS tracks(
                 id STRING PRIMARY KEY,
                 title STRING,
                 artists STRING

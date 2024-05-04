@@ -20,7 +20,7 @@ class UserController:
     '''
     Class that provides higher-level API for SQL table "users"
     '''
-    def __init__(self, database):
+    def __init__(self, database: str):
         '''
         Opens connection to database and saves cursor
         '''
@@ -41,7 +41,7 @@ class UserController:
                          (user.username, user.password, user.is_admin))
         self.con.commit()
 
-    def user_from_tuple(self, t: Tuple[str, str, bool]):
+    def user_from_tuple(self, t: Tuple[str, str, bool]) -> User:
         '''
         Converts unnamed tuple with values in right order into user
         '''
@@ -53,7 +53,7 @@ class UserController:
         Returns User if found, otherwise None
         '''
         self.cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-        out = self.cur.fetchone()
+        out: Optional[Tuple[str, str, bool]] = self.cur.fetchone()
         if out is not None:
             return self.user_from_tuple(out)
         return None
