@@ -3,7 +3,6 @@ A higher-level API for SQL table "tracks"
 '''
 from typing import List, Tuple, Optional
 import uuid
-import json
 
 import sqlite3
 from pydantic import BaseModel
@@ -14,12 +13,19 @@ class Track(BaseModel):
     Pydantic model representing track
     '''
     title: str | None = None
-    artists: List[str] = []
+    artists: str | None = None
 
 
 class DBTrack(Track):
     '''
     Pydantic model representing track stored in Database
+    '''
+    uuid: str
+
+
+class TrackUUID(BaseModel):
+    '''
+    Pydantic model representing track UUOD
     '''
     uuid: str
 
@@ -48,15 +54,15 @@ class TrackController:
         '''
         track_id: str = str(uuid.uuid4())
         self.cur.execute('INSERT INTO tracks VALUES(?, ?, ?)',
-                         (track_id, track.title, json.dumps(track.artists)))
+                         (track_id, track.title, track.artists))
         self.con.commit()
         return track_id
 
-    def track_from_entry(self, t: Tuple[str, str, str]) -> Track:
+    def track_from_entry(self, t: Tuple[str, str, str]) -> DBTrack:
         '''
         Converts database entry into Track
         '''
-        return Track(uuid=t[0], title=t[1], artists=json.loads(t[2]))
+        return DBTrack(uuid=t[0], title=t[1], artists=t[2])
 
     def find_track(self, uuid_str: str) -> Optional[DBTrack]:
         '''
@@ -74,5 +80,5 @@ class TrackController:
         Updates dbtrack with track.uuid with new values
         '''
         self.cur.execute('UPDATE tracks SET title = ?, artists = ? WHERE uuid = ?',
-                         (track.title, json.dumps(track.artists), track.uuid))
+                         (track.title, track.artists, track.uuid))
         self.con.commit()
