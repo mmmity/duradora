@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from src.db.user_controller import UserController, User
 
+
 class TestUserController(unittest.TestCase):
     '''
     Tests UserController class

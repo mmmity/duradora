@@ -4,6 +4,7 @@ Tests for hashes module
 import unittest
 from src.hashes import SHA256Hasher
 
+
 class TestSHA256Hasher(unittest.TestCase):
     '''
     Class for testing SHA256Hasher

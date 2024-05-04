@@ -3,6 +3,7 @@ Provides more convenient API for working with hashes
 '''
 from hashlib import sha256
 
+
 class SHA256Hasher:
     '''
     Class for making salted SHA256

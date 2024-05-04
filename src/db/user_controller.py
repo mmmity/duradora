@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 import sqlite3
 from pydantic import BaseModel
 
+
 class User(BaseModel):
     '''
     Pydantic model representing user
@@ -13,6 +14,7 @@ class User(BaseModel):
     username: str
     password: str
     is_admin: bool = False
+
 
 class UserController:
     '''

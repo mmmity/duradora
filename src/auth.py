@@ -14,13 +14,16 @@ from src import config
 from src.hashes import SHA256Hasher
 from src.responses import Error, Success
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
+
 class Token(BaseModel):
     '''
     Model for returning token from login
     '''
     access_token: str
     token_type: str
+
 
 class TokenData(BaseModel):
     '''

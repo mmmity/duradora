@@ -3,6 +3,7 @@ Contains models representing generic API responses
 '''
 from pydantic import BaseModel
 
+
 class Error(BaseModel):
     '''
     Model for returning when error occured
