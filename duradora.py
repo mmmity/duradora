@@ -60,5 +60,5 @@ async def get_track(uuid: str):
     return await tracks.get_track(uuid)
 
 @app.get('/stream')
-def stream_track(uuid: str):
-    return tracks.stream_track(uuid)
+async def stream_track(uuid: str):
+    return await tracks.stream_track(uuid)
