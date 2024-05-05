@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import MagicMock
 from jose import jwt
 
-from src import config
+from src.config import config
 from src.auth import Auth, Error, Success, Token
 from src.db.user_controller import User
 from src.hashes import SHA256Hasher
@@ -20,7 +20,7 @@ class MockAuth(Auth):
         Initializes controller as MagicMock. Hasher is intact
         '''
         self.controller = MagicMock()
-        self.hasher = SHA256Hasher(config.SALT)
+        self.hasher = SHA256Hasher(config['salt'])
 
 
 class TestAuth(unittest.TestCase):
@@ -46,7 +46,7 @@ class TestAuth(unittest.TestCase):
         '''
         auth = MockAuth()
         token: str = auth.create_access_token({'flex': 'chill', 'cringe': True})
-        decoded = jwt.decode(token, config.SECRET_KEY)
+        decoded = jwt.decode(token, config['secret_key'])
 
         self.assertEqual(decoded['flex'], 'chill')
         self.assertEqual(decoded['cringe'], True)
@@ -70,16 +70,16 @@ class TestAsyncs(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(wrong_decoded_token_res, Error)
 
         wrong_composed_token = jwt.encode({'dora': 'dura'},
-                                          key=config.SECRET_KEY,
-                                          algorithm=config.ALGORITHM)
+                                          key=config['secret_key'],
+                                          algorithm=config['algorithm'])
         wrong_composed_token_res = await auth.get_current_user(wrong_composed_token)
         self.assertIsInstance(wrong_composed_token_res, Error)
 
         test_user = User(username='mmmity', password='')
         auth.controller.find_user.return_value = test_user
         good_token = jwt.encode({'username': 'mmmity'},
-                                key=config.SECRET_KEY,
-                                algorithm=config.ALGORITHM)
+                                key=config['secret_key'],
+                                algorithm=config['algorithm'])
         good_token_res = await auth.get_current_user(good_token)
         self.assertEqual(good_token_res, test_user)
 

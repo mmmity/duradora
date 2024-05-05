@@ -10,7 +10,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from src.db.user_controller import UserController, User
-from src import config
+from src.config import config
 from src.hashes import SHA256Hasher
 from src.responses import Error, Success
 
@@ -48,8 +48,8 @@ class Auth:
         '''
         Initializes user db controller and hasher
         '''
-        self.controller = UserController(config.DB_PATH)
-        self.hasher = SHA256Hasher(config.SALT)
+        self.controller = UserController(config['db_path'])
+        self.hasher = SHA256Hasher(config['salt'])
 
     def get_user(self, username: str) -> Optional[User]:
         '''
@@ -74,10 +74,10 @@ class Auth:
         '''
         to_encode: dict = data.copy()
         expires: datetime = datetime.now(timezone.utc)
-        expires += timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires += timedelta(minutes=config['access_token_expire_minutes'])
 
         to_encode.update({'exp': expires})
-        encoded_jwt: str = jwt.encode(to_encode, config.SECRET_KEY, algorithm=config.ALGORITHM)
+        encoded_jwt: str = jwt.encode(to_encode, config['secret_key'], algorithm=config['algorithm'])
         return encoded_jwt
 
     async def get_current_user(self, token: Annotated[str, Depends(oauth2_scheme)]) -> User | Error:
@@ -86,7 +86,7 @@ class Auth:
         '''
         creds_error = Error(error='invalid credentials')
         try:
-            payload: dict = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+            payload: dict = jwt.decode(token, config['secret_key'], algorithms=[config['algorithm']])
             username: str = payload.get('username')
             if username is None:
                 return creds_error

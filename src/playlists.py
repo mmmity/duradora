@@ -8,7 +8,7 @@ from src.db.playlist_controller import PlaylistController, Playlist, DBPlaylist,
 from src.db.track_controller import TrackController, DBTrack
 from src.users import UserHandler
 from src.responses import Error, Success
-from src import config
+from src.config import config
 
 
 class PlaylistForCreation(BaseModel):
@@ -35,8 +35,8 @@ class PlaylistHandler:
         '''
         Initializes database controller
         '''
-        self.controller = PlaylistController(config.DB_PATH)
-        self.track_controller = TrackController(config.DB_PATH)
+        self.controller = PlaylistController(config['db_path'])
+        self.track_controller = TrackController(config['db_path'])
         self.user_handler = UserHandler()
 
     async def create_playlist_for_user(self, executor: str,

@@ -3,7 +3,7 @@ Module that contains some useful methods for handling users
 '''
 
 from src.db.user_controller import UserController, User
-from src import config
+from src.config import config
 from src.responses import Error, Success
 
 
@@ -15,7 +15,7 @@ class UserHandler:
         '''
         Initializes database
         '''
-        self.controller = UserController(config.DB_PATH)
+        self.controller = UserController(config['db_path'])
 
     def is_admin(self, username: str) -> bool:
         '''

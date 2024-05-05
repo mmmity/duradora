@@ -3,9 +3,9 @@ Initializes database if it is not already initialized
 '''
 import sqlite3
 from src.db.user_controller import UserController
-from src import config
+from src.config import config
 
-con = sqlite3.connect(config.DB_PATH)
+con = sqlite3.connect(config['db_path'])
 cur = con.cursor()
 
 cur.execute('''CREATE TABLE IF NOT EXISTS users(

@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from src.db.track_controller import TrackController, Track, DBTrack, TrackUUID
 from src.responses import Error
 from src.users import UserHandler
-from src import config
+from src.config import config
 
 class TrackWithFile(Track):
     '''
@@ -34,8 +34,8 @@ class TrackHandler:
         '''
         Initializes database and storage path
         '''
-        self.controller = TrackController(config.DB_PATH)
-        self.storage: str = config.STORAGE_PATH
+        self.controller = TrackController(config['db_path'])
+        self.storage: str = config['storage_path']
         self.user_handler = UserHandler()
         os.makedirs(self.storage, exist_ok=True)
 
