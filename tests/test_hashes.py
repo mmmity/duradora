@@ -19,5 +19,5 @@ class TestSHA256Hasher(unittest.TestCase):
         self.assertTrue(hasher.verify('strongpassword', hasher.hexdigest('strongpassword')))
         self.assertFalse(hasher.verify('weakpassword', hasher.hexdigest('strongpassword')))
 
-        hasher2 = SHA256Hasher(b'')
+        hasher2 = SHA256Hasher('')
         self.assertEqual(hasher.hexdigest('hmm'), hasher2.hexdigest('hmmsalt_from_Piter'))
