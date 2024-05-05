@@ -96,7 +96,7 @@ class TrackHandler:
         '''
         out: Optional[DBTrack] = self.controller.find_track(uuid)
         if out is None:
-            return Error("No such track found")
+            return Error(error="No such track found")
         return out
 
     async def stream_track(self, uuid: str) -> StreamingResponse | Error:
@@ -104,7 +104,7 @@ class TrackHandler:
         Streams track with uuid if its file exists
         '''
         if not os.path.exists(self.storage + '/' + uuid + '.mp3'):
-            return Error("No file for such track exists")
+            return Error(error="No file for such track exists")
 
         def iterfile():
             with open(self.storage + '/' + uuid + '.mp3', 'rb') as stream:

@@ -161,7 +161,8 @@ class PlaylistHandler:
                     return False
                 return track.title.find(search_str) != -1
 
-            out = list(filter(check_track, playlist.tracks))
+            uuids = list(filter(check_track, playlist.tracks))
+            out = list(map(self.track_controller.find_track, uuids))
             return out
         except Exception as e:
             return Error(error=repr(e))
