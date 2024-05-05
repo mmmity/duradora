@@ -32,6 +32,14 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
+class RegisterUser(BaseModel):
+    '''
+    Model that contains only username and password for registering users
+    '''
+    username: str
+    password: str
+
+
 class Auth:
     '''
     Class for handling user authorization via JWT
@@ -90,7 +98,7 @@ class Auth:
             return creds_error
         return user
 
-    async def register_user(self, user: User) -> Success | Error:
+    async def register_user(self, user: RegisterUser) -> Success | Error:
         '''
         Tries to add user into database
         '''

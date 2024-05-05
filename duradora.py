@@ -1,7 +1,7 @@
 '''
 Main file with all endpoints
 '''
-from typing import Annotated, Optional, List
+from typing import Annotated, List
 
 from fastapi import FastAPI, Depends, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from src.responses import Success, Error
 
 from src.db.user_controller import User
-from src.auth import Auth, Token
+from src.auth import Auth, Token, RegisterUser
 from src.users import UserHandler
 
 from src.db.track_controller import DBTrack
@@ -26,7 +26,7 @@ users = UserHandler()
 app = FastAPI()
 
 @app.post('/register', response_model=Success | Error)
-async def register(user: User) -> Success | Error:
+async def register(user: RegisterUser) -> Success | Error:
     '''
     Registers new user
     '''
