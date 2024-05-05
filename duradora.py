@@ -1,93 +1,139 @@
-from fastapi import FastAPI, Depends, UploadFile, Form, File
-from fastapi.responses import StreamingResponse
+'''
+Main file with all endpoints
+'''
+from typing import Annotated, Optional, List
+
+from fastapi import FastAPI, Depends, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
-from typing import Annotated, Optional
+from fastapi.responses import StreamingResponse
 
-from src.db.user_controller import User, UserController
-from src.auth import Auth
+from src.responses import Success, Error
 
-from src.db.track_controller import TrackController, Track
-from src.tracks import TrackHandler, TrackWithFile, DBTrackWithFile
+from src.db.user_controller import User
+from src.auth import Auth, Token
+from src.users import UserHandler
 
-from src.db.playlist_controller import PlaylistController
-from src.playlists import PlaylistHandler, PlaylistForCreation
+from src.db.track_controller import DBTrack
+from src.tracks import TrackHandler, TrackWithFile, DBTrackWithFile, TrackUUID
 
-from pydantic import BaseModel
+from src.playlists import PlaylistHandler, PlaylistForCreation, PlaylistUUID, DBPlaylist
+
 
 auth = Auth()
 tracks = TrackHandler()
 playlists = PlaylistHandler()
+users = UserHandler()
 app = FastAPI()
 
-class Error(BaseModel):
-    error: str
-
-@app.post('/register')
-async def register(user: User):
+@app.post('/register', response_model=Success | Error)
+async def register(user: User) -> Success | Error:
+    '''
+    Registers new user
+    '''
     return await auth.register_user(user)
 
-@app.post('/login')
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+@app.post('/login', response_model=Token | Error)
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token | Error:
+    '''
+    Attempts to login with username and password
+    If succeeds, returns JWT token for authorization
+    '''
     return await auth.login_user(User(username=form_data.username, password=form_data.password))
 
-@app.get('/me', response_model=User | Error)
-async def get_user(current_user: Annotated[User, Depends(auth.get_current_user)]):
-    if 'error' in current_user.model_fields.keys():
-        return current_user
-    try:
-        controller = UserController('duradora.db')
-        user = controller.find_user(current_user.username)
-        if user is None:
-            return {'error': 'No such user'}
-        return user
-    except Exception as e:
-        return {'error': str(e)}
+@app.post('/user/update', response_model=Success | Error)
+async def update_user(executor: Annotated[User, Depends(auth.get_current_user)],
+                      user: User) -> Success | Error:
+    '''
+    Attempts to update user. Is in authorized zone.
+    Works only if executor is admin or if executor updates themself.
+    If executor is not admin, they cannot make themselves admin.
+    '''
+    return await users.update_user(executor.username, user)
 
-@app.post('/user/update')
-async def update_user(user: User):
-    try:
-        controller = UserController('duradora.db')
-        controller.update_user(user)
-    except Exception as e:
-        return {'error': str(e)}
-    return {'success': True}
+@app.post('/track/add', response_model=TrackUUID | Error)
+async def add_track(executor: Annotated[User, Depends(auth.get_current_user)],
+                    title: str | None = None, artists: str | None = None,
+                    file: Annotated[UploadFile, File()] = None) -> TrackUUID | Error:
+    '''
+    Adds track to database. Can only be performed by admin
+    '''
+    return await tracks.add_track(executor.username,
+                                  TrackWithFile(title=title, artists=artists, file=file))
 
-@app.post('/track/add')
-async def add_track(title: str | None = None, artists: str | None = None, file: Annotated[UploadFile, File()] = None):
-    return await tracks.add_track(TrackWithFile(title=title, artists=artists, file=file))
+@app.post('/track/update', response_model=TrackUUID | Error)
+async def update_track(executor: Annotated[User, Depends(auth.get_current_user)],
+                       uuid: str, title: str | None = None, artists: str | None = None,
+                       file: Annotated[UploadFile, File()] = None) -> TrackUUID | Error:
+    '''
+    Updates track in database. Can only be performed by admin
+    '''
+    return await tracks.update_track(
+        executor.username,
+        DBTrackWithFile(uuid=uuid, title=title, artists=artists, file=file)
+    )
 
-@app.post('/track/update')
-async def update_track(uuid: str, title: str | None = None, artists: str | None = None, file: Annotated[UploadFile, File()] = None):
-    return await tracks.update_track(DBTrackWithFile(uuid=uuid, title=title, artists=artists, file=file))
-
-@app.get('/track')
-async def get_track(uuid: str):
+@app.get('/track', response_model=Optional[DBTrack])
+async def get_track(uuid: str) -> Optional[DBTrack]:
+    '''
+    Returns track metadata by uuid
+    '''
     return await tracks.get_track(uuid)
 
-@app.get('/stream')
-async def stream_track(uuid: str):
+@app.get('/stream', response_model=Optional[StreamingResponse])
+async def stream_track(uuid: str) -> Optional[StreamingResponse]:
+    '''
+    Streams track by uuid
+    '''
     return await tracks.stream_track(uuid)
 
-@app.post('/playlist')
-async def create_playlist(executor: Annotated[User, Depends(auth.get_current_user)], playlist: PlaylistForCreation):
+@app.post('/playlist', response_model=PlaylistUUID | Error)
+async def create_playlist(executor: Annotated[User, Depends(auth.get_current_user)],
+                          playlist: PlaylistForCreation) -> PlaylistUUID | Error:
+    '''
+    Creates playlist for user executor. Is in authorized zone
+    '''
     return await playlists.create_playlist_for_user(executor.username, playlist)
 
-@app.get('/playlist')
-async def get_playlist(executor: Annotated[User, Depends(auth.get_current_user)], playlist_id: str):
+@app.get('/playlist', response_model=DBPlaylist | Error)
+async def get_playlist(executor: Annotated[User, Depends(auth.get_current_user)],
+                       playlist_id: str) -> DBPlaylist | Error:
+    '''
+    Shows playlist by id. Is in authorized zone
+    Does not show private playlists of others to non-admins
+    '''
     return await playlists.get_playlist(executor.username, playlist_id)
 
-@app.post('/playlist/add_track')
-async def add_track_to_playlist(executor: Annotated[User, Depends(auth.get_current_user)], playlist_id: str, track_id: str):
+@app.post('/playlist/add_track', response_model=Success | Error)
+async def add_track_to_playlist(executor: Annotated[User, Depends(auth.get_current_user)],
+                                playlist_id: str, track_id: str) -> Success | Error:
+    '''
+    Adds track to playlist
+    Can only be performed by its creator or an admin
+    '''
     return await playlists.add_track_to_playlist(executor.username, playlist_id, track_id)
 
-@app.post('/playlist/remove_track')
-async def remove_track_from_playlist(executor: Annotated[User, Depends(auth.get_current_user)], playlist_id: str, track_id: str):
+@app.post('/playlist/remove_track', response_model=Success | Error)
+async def remove_track_from_playlist(executor: Annotated[User, Depends(auth.get_current_user)],
+                                     playlist_id: str, track_id: str) -> Success | Error:
+    '''
+    Removes track from playlist
+    Can only be performed by its creator or an admin
+    '''
     return await playlists.remove_track_from_playlist(executor.username, playlist_id, track_id)
 
-@app.get('/user/{username}/playlists')
-async def show_user_playlists(executor: Annotated[User, Depends(auth.get_current_user)], username: str):
+@app.get('/user/{username}/playlists', response_model=List[DBPlaylist])
+async def show_user_playlists(executor: Annotated[User, Depends(auth.get_current_user)],
+                              username: str) -> List[DBPlaylist]:
+    '''
+    Shows playlist created by username
+    If executor is not admin and not username, shows only public ones
+    '''
     return await playlists.show_user_playlists(executor.username, username)
 
-@app.get('/playlist/{playlist_id}/search')
-async def search_playlist(executor: Annotated[User, Depends(auth.get_current_user)], playlist_id: str, search_str: str):
+@app.get('/playlist/{playlist_id}/search', response_model=List[DBTrack])
+async def search_playlist(executor: Annotated[User, Depends(auth.get_current_user)],
+                          playlist_id: str, search_str: str) -> List[DBTrack]:
+    '''
+    Tries to search by track name in playlists
+    '''
     return await playlists.search_playlist(executor.username, playlist_id, search_str)
