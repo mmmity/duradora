@@ -9,3 +9,5 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 DB_PATH = 'duradora.db'
 STORAGE_PATH = 'dorage'
+
+ADMIN_PASSWORD = 'ilovedora'
