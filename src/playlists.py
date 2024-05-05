@@ -154,7 +154,6 @@ class PlaylistHandler:
             playlist: DBPlaylist | Error = await self.get_playlist(username, playlist_id)
             if isinstance(playlist, Error):
                 return playlist
-            print(playlist.tracks)
 
             def check_track(track_id: str) -> bool:
                 track: Optional[DBTrack] = self.track_controller.find_track(track_id)
