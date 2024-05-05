@@ -20,8 +20,8 @@ An API for music streaming service
 - sqlite
 
 ## Зависимости
-[fastapi](https://github.com/tiangolo/fastapi) - фреймворк для создания асинхронных REST API
-[sqlite3](https://docs.python.org/3/library/sqlite3.html) - для базы данных
+- [fastapi](https://github.com/tiangolo/fastapi) - фреймворк для создания асинхронных REST API
+- [sqlite3](https://docs.python.org/3/library/sqlite3.html) - для базы данных
 
 ## Эндпоинты
 - GET `/docs` - посмотреть в браузере документацию к API в виде SwaggerUI
