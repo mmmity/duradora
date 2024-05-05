@@ -13,7 +13,7 @@ class TestSHA256Hasher(unittest.TestCase):
         '''
         Basic functionality tests
         '''
-        hasher = SHA256Hasher(b'salt_from_Piter')
+        hasher = SHA256Hasher('salt_from_Piter')
 
         self.assertEqual(hasher.hexdigest('sample'), hasher.hexdigest('sample'))
         self.assertTrue(hasher.verify('strongpassword', hasher.hexdigest('strongpassword')))
