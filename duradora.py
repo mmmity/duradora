@@ -130,9 +130,9 @@ async def show_user_playlists(executor: Annotated[User, Depends(auth.get_current
     '''
     return await playlists.show_user_playlists(executor.username, username)
 
-@app.get('/playlist/{playlist_id}/search', response_model=List[DBTrack])
+@app.get('/playlist/search', response_model=List[DBTrack] | Error)
 async def search_playlist(executor: Annotated[User, Depends(auth.get_current_user)],
-                          playlist_id: str, search_str: str) -> List[DBTrack]:
+                          playlist_id: str, search_str: str) -> List[DBTrack] | Error:
     '''
     Tries to search by track name in playlists
     '''
