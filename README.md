@@ -23,22 +23,87 @@ An API for music streaming service
 [sqlite3](https://docs.python.org/3/library/sqlite3.html) - для базы данных
 
 ## Эндпоинты
-### Треки
-- POST `/track` - добавляет новый трек, параметры - файл и метаданные. Все параметры опциональные и их можно загрузить позднее. Возвращает либо идентификатор нового трека, либо описание ошибки, если такая возникла
-- POST `/track?id=` - обновляет метаданные и файл уже существующего трека. Те же параметры. Возвращает то же самое, что и выше.
-- GET `/track?id=` - возвращает метаданные трека либо описание ошибки
-- GET `/stream?id=` - устанавливает соединение для стриминга трека
+- GET `/docs` - посмотреть в браузере документацию к API в виде SwaggerUI
 ### Пользователи
-- POST `/register` - добавляет нового пользователя, параметры - логин, пароль. Возвращает success либо описание ошибки
-- POST `/login` - пытается авторизоваться, параметры - логин, пароль. Возвращает токен либо описание ошибки
-- POST `/set_rights` - меняет права пользователя, доступна только админу. Принимает юзернейм и новые права. Возвращает success либо описание ошибки
+#### POST `/register`
+ Добавляет нового пользователя. В теле запроса должны содержаться username и password. Возвращает Success если пользователь успешно добавлен и Error в противном случае (например, пользователь уже существовал)
+ Пример запроса:
+ ```
+ curl -X 'POST' 'http://localhost:8000/register' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"username": "mmmity", "password": "ilovedora"}'
+ ```
+#### POST `/login`
+Пытается авторизоваться. Обязательные параметры - username и password, также есть необязательные, сгенерированные средствами fastapi для аутентификации, они ни на что не влияют.
+В случае успешной авторизации возвращает JWT для доступа к авторизованной зоне, иначе ошибку.
+Пример запроса:
+```
+curl -X 'POST' 'http://localhost:8000/login' -H 'accept: application/json' -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=mmmity&password=ilovedora'
+```
+
+Для доступа к авторизованной зоне нужно добавлять заголовок `Authorization: Bearer <your-jwt>`
+#### POST `/user/update`
+Меняет права пользователя, доступна только админу. Принимает username, password, is_admin - пароль и права заменяют старые. Возвращает Success или Error
+Пример запроса:
+```
+curl -X 'POST' 'http://localhost:8000/user/update' -H 'accept: application/json' -H 'Authorization: Bearer <your-jwt>' -H 'Content-Type: application/json' -d '{"username": "mmmity", "password": "ilovedora", "is_admin": true}'
+```
+### Треки
+#### POST `/track/add`
+Добавляет новый трек. Параметры - title, artists (строки) и file (файл). Доступна только админу. Все параметры опциональные и их можно загрузить позднее. Возвращает либо идентификатор нового трека, либо описание ошибки, если такая возникла.
+Пример запроса:
+```
+curl -X 'POST' 'http://localhost:8000/track/add?title=Duradora&artists=Dora' -H 'accept: application/json' -H 'Authorization: Bearer <your-jwt>' -H 'Content-Type: multipart/form-data' -F 'file=@duradora.mp3;type=audio/mpeg'
+```
+#### POST `/track/update`
+Обновляет метаданные и файл уже существующего трека. Работает аналогично `/track/add`, но требует еще и uuid трека. Доступна только админу.
+#### GET `/track`
+Возвращает метаданные трека либо описание ошибки. Один параметр - `uuid`. Доступна без авторизации.
+Пример запроса:
+```
+curl -X 'GET' 'http://localhost:8000/track?uuid=your-uuid' -H 'accept: application/json'
+```
+#### GET `/stream`
+Устанавливает соединение для стриминга трека либо возвращает ошибку. Один параметр - `uuid`. Доступна без авторизации.
+Пример запроса:
+```
+curl -X 'GET' 'http://localhost:8000/stream?uuid=your-uuid' -H 'accept: application/json'
+```
 ### Плейлисты
-- POST `/playlist` - создает новый плейлист для авторизованного пользователя. Принимает название и параметры. Возвращает идентификатор плейлиста или описание ошибки 
-- POST `/playlist/add_song?id=` - добавляет песню id в плейлист. Возвращает либо success, либо описание ошибки
-- POST `/playlist/remove_song?id=` - удаляет песню id из плейлиста. Возвращает либо success, либо описание ошибки
-- GET `/playlist?id=` - выдает список треков в плейлисте, если он публичный. Возвращает список треков либо описание ошибки
-- GET `/user/playlists?username=` - выдает список публичных плейлистов у пользователя username, либо описание ошибки
-- GET `/playlist/search?search_string=` - пытается провести поиск по плейлисту и возвращает результаты
+Модификаторы доступа: 
+- 0 - публичный, доступен всем авторизованным пользователям, отображается в списке плейлистов пользователя
+- 1 - по ссылке, не отображается в списке плейлистов пользователя, но доступен всем авторизованным
+- 2 - приватный, доступен только создателю и админу
+#### POST `/playlist`
+Создает новый плейлист для авторизованного пользователя. Принимает пользователя, к которому будет привязан, название и модификатор доступа. Возвращает идентификатор плейлиста или описание ошибки. Админ может привязывать плейлист к кому угодно, остальные пользователи только сами к себе.
+Пример запроса:
+```
+curl -X 'POST' 'http://localhost:8000/playlist' -H 'accept: application/json' -H 'Authorization: Bearer <your-jwt>' -H 'Content-Type: application/json' -d '{"creator": "mmmity","title": "dora songs","access": 0}'
+```
+#### POST `/playlist/add_track`
+Добавляет трек id в плейлист. Может быть выполнен только пользователем, к которому плейлист привязан, либо админом. Принимает uuid плейлиста и uuid трека. Возвращает либо success, либо описание ошибки
+Пример запроса:
+```
+curl -X 'POST' 'http://localhost:8000/playlist/add_track?playlist_id=playlist-id&track_id=track-id' -H 'accept: application/json' -H 'Authorization: Bearer <your-jwt>'
+```
+#### POST `/playlist/remove_track?id=`
+Удаляет трек id из плейлиста. Возвращает либо success, либо описание ошибки. Работает аналогично `/playlist/add_track`
+#### GET `/playlist`
+Выдает список треков в плейлисте, если он не приватный. Доступна только авторизованным пользователям. Если приватный, то доступна только создателю плейлиста либо админу. Возвращает список треков либо описание ошибки.
+Пример запроса:
+```
+curl -X 'GET' 'http://localhost:8000/playlist?playlist_id=playlist-id' -H 'accept: application/json' -H 'Authorization: Bearer <youd-jwt>'
+```
+#### GET `/user/{username}/playlists`
+Доступна только авторизованным пользователям. Выдает список публичных плейлистов у пользователя username (для админа или самого username показывает все) либо описание ошибки.
+Пример запроса:
+```
+curl -X 'GET' 'http://localhost:8000/user/mmmity/playlists' -H 'accept: application/json' -H 'Authorization: Bearer <your-jwt>'
+```
+#### GET `/playlist/{playlist_id}/search`
+Пытается провести поиск по плейлисту playlist_id и возвращает результаты. Принимает параметром строку search_str, возвращает все треки, в названии которых она есть.
+Пример запроса:
+```
+curl -X 'GET' 'http://localhost:8000/playlist/search?playlist_id=bb469922-14df-4ec8-98ec-e12e6e0b77fe&search_str=Doradu' -H 'accept: application/json' -H 'Authorization: Bearer <your-jwt>'
+```
 
 
 ## Архитектура
@@ -58,4 +123,10 @@ UserController, TrackController, PlaylistController - классы, которы
 Класс, содержащий методы для авторизации пользователей
 
 ### TrackHandler
-Класс, содержащий методы для добавления треков в файловую систему и базу данных
+Класс, содержащий методы для добавления треков в файловую систему и базу данных и работы с ними
+
+### PlaylistHandler
+Класс, содержащий методы для работы с плейлистами
+
+### UserHandler
+Класс, содержащий вспомогательные методы для работы с пользователями
