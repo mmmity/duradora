@@ -1,5 +1,6 @@
 # duradora
 An API for music streaming service
+![coverage](coverage.svg)
 
 МФТИ, Практикум Python 2024, 1 курс, Б05-328, Канухин Александр
 
