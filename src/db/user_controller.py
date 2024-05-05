@@ -3,7 +3,6 @@ A higher-level API for SQL table "users"
 '''
 from typing import Optional, Tuple
 
-import sqlite3
 from pydantic import BaseModel
 
 from src.db.controller import Controller
@@ -22,11 +21,6 @@ class UserController(Controller):
     '''
     Class that provides higher-level API for SQL table "users"
     '''
-    def __init__(self, database: str):
-        '''
-        Initializes base controller
-        '''
-        super().__init__(database)
 
     def create_user(self, user: User):
         '''

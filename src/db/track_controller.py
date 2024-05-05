@@ -4,7 +4,6 @@ A higher-level API for SQL table "tracks"
 from typing import Tuple, Optional
 import uuid
 
-import sqlite3
 from pydantic import BaseModel
 
 from src.db.controller import Controller
@@ -35,11 +34,6 @@ class TrackController(Controller):
     '''
     Class that provides higher-level API for SQL table "tracks"
     '''
-    def __init__(self, database: str):
-        '''
-        Initializes base controller
-        '''
-        super().__init__(database)
 
     def create_track(self, track: Track) -> str:
         '''

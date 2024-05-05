@@ -23,9 +23,9 @@ cur.execute('''CREATE TABLE IF NOT EXISTS tracks(
 cur.execute('''CREATE TABLE IF NOT EXISTS playlists(
                 uuid STRING PRIMARY KEY,
                 title STRING,
-                songs STRING,
                 creator STRING,
-                availability INTEGER
+                access INTEGER,
+                tracks STRING
 )''')
 
 userController = UserController('duradora.db')
