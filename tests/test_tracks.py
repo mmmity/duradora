@@ -21,6 +21,7 @@ class MockTrackHandler(TrackHandler):
         '''
         self.controller = MagicMock()
         self.storage = 'test_storage' + random.randbytes(5).hex()
+        self.user_handler = MagicMock()
         os.makedirs(self.storage, exist_ok=True)
 
     def __del__(self):
@@ -66,7 +67,11 @@ class TestTrackHandler(unittest.IsolatedAsyncioTestCase):
         mock_track.file.read.return_value = b'contents'
         handler.controller.create_track.return_value = 'lol'
 
-        uuid = await handler.add_track(mock_track)
+        handler.user_handler.is_admin.return_value = False
+        self.assertIsInstance(await handler.add_track(None, None), Error)
+        handler.user_handler.is_admin.return_value = True
+
+        uuid = await handler.add_track(None, mock_track)
         self.assertTrue(os.path.exists(handler.storage + '/lol.mp3'))
         with open(handler.storage + '/lol.mp3', 'r') as f:
             self.assertEqual(f.read(), 'contents')
@@ -74,26 +79,30 @@ class TestTrackHandler(unittest.IsolatedAsyncioTestCase):
 
         handler.save_file = AsyncMock
         handler.save_file.side_effect = KeyError()
-        self.assertIsInstance(await handler.add_track(mock_track), Error)
+        self.assertIsInstance(await handler.add_track(None, mock_track), Error)
 
     async def test_update_track(self):
         '''
         Tests for update_track method
         '''
         handler = MockTrackHandler()
+        track = MockDBTrackWithFile(uuid='u', artists='a', file='f')
+
+        handler.user_handler.is_admin.return_value = False
+        self.assertIsInstance(await handler.update_track(None, None), Error)
+        handler.user_handler.is_admin.return_value = True
 
         handler.controller.find_track.return_value = None
-        self.assertIsInstance(await handler.update_track(None), Error)
+        self.assertIsInstance(await handler.update_track(None, track), Error)
 
-        track = MockDBTrackWithFile(uuid='u', artists='a', file='f')
         mocktrack1 = MockDBTrackWithFile(uuid='u', title='t', file='f')
         mocktrack2 = MockDBTrackWithFile(uuid='u', title='t', artists='a', file='f')
         handler.controller.find_track.return_value = mocktrack1
         handler.save_file = AsyncMock()
-        out = await handler.update_track(track)
+        out = await handler.update_track(None, track)
         handler.controller.update_track.assert_called_with(mocktrack2)
         handler.save_file.assert_called_with('u.mp3', 'f')
         self.assertEqual(out.uuid, 'u')
 
         handler.controller.find_track.side_effect = KeyError()
-        self.assertIsInstance(await handler.update_track(None), Error)
+        self.assertIsInstance(await handler.update_track(None, None), Error)

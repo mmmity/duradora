@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import MagicMock
 
 from src.users import UserHandler, User
+from src.responses import Success, Error
 
 
 class MockUserHandler(UserHandler):
@@ -36,3 +37,28 @@ class TestUserHandler(unittest.TestCase):
 
         handler.controller.find_user.return_value.is_admin = True
         self.assertTrue(handler.is_admin('u'))
+
+
+class TestUserHandlerAsync(unittest.IsolatedAsyncioTestCase):
+    '''
+    Tests for async methods of UserHandler class
+    '''
+    async def test_update_user(self):
+        '''
+        Tests for update_user method
+        '''
+        handler = MockUserHandler()
+        handler.is_admin = MagicMock()
+
+        handler.is_admin.return_value = True
+        self.assertIsInstance(await handler.update_user('u', None), Success)
+        handler.is_admin.return_value = False
+
+        user = User(username='u', password='p')
+        self.assertIsInstance(await handler.update_user('u', user), Success)
+
+        user = User(username='u', password='p', is_admin=True)
+        self.assertIsInstance(await handler.update_user('u', user), Error)
+
+        handler.is_admin.side_effect = KeyError()
+        self.assertIsInstance(await handler.update_user('u', None), Error)
