@@ -72,15 +72,15 @@ async def update_track(executor: Annotated[User, Depends(auth.get_current_user)]
         DBTrackWithFile(uuid=uuid, title=title, artists=artists, file=file)
     )
 
-@app.get('/track', response_model=Optional[DBTrack])
-async def get_track(uuid: str) -> Optional[DBTrack]:
+@app.get('/track', response_model=DBTrack | Error)
+async def get_track(uuid: str) -> DBTrack | Error:
     '''
     Returns track metadata by uuid
     '''
     return await tracks.get_track(uuid)
 
-@app.get('/stream', response_model=Optional[StreamingResponse])
-async def stream_track(uuid: str) -> Optional[StreamingResponse]:
+@app.get('/stream', response_model=None)
+async def stream_track(uuid: str) -> StreamingResponse | Error:
     '''
     Streams track by uuid
     '''
