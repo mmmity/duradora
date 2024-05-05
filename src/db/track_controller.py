@@ -7,6 +7,7 @@ import uuid
 import sqlite3
 from pydantic import BaseModel
 
+from src.db.controller import Controller
 
 class Track(BaseModel):
     '''
@@ -30,22 +31,15 @@ class TrackUUID(BaseModel):
     uuid: str
 
 
-class TrackController:
+class TrackController(Controller):
     '''
     Class that provides higher-level API for SQL table "tracks"
     '''
     def __init__(self, database: str):
         '''
-        Opens connection to database and saves cursor
+        Initializes base controller
         '''
-        self.con: sqlite3.Connection = sqlite3.connect(database)
-        self.cur: sqlite3.Cursor = self.con.cursor()
-
-    def __del__(self):
-        '''
-        Closes the connection when object is deleted
-        '''
-        self.con.close()
+        super().__init__(database)
 
     def create_track(self, track: Track) -> str:
         '''

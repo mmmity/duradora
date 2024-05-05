@@ -6,6 +6,8 @@ from typing import Optional, Tuple
 import sqlite3
 from pydantic import BaseModel
 
+from src.db.controller import Controller
+
 
 class User(BaseModel):
     '''
@@ -16,22 +18,15 @@ class User(BaseModel):
     is_admin: bool = False
 
 
-class UserController:
+class UserController(Controller):
     '''
     Class that provides higher-level API for SQL table "users"
     '''
     def __init__(self, database: str):
         '''
-        Opens connection to database and saves cursor
+        Initializes base controller
         '''
-        self.con: sqlite3.Connection = sqlite3.connect(database)
-        self.cur: sqlite3.Cursor = self.con.cursor()
-
-    def __del__(self):
-        '''
-        Closes the connection when object is deleted
-        '''
-        self.con.close()
+        super().__init__(database)
 
     def create_user(self, user: User):
         '''
