@@ -23,6 +23,12 @@ An API for music streaming service
 - [fastapi](https://github.com/tiangolo/fastapi) - фреймворк для создания асинхронных REST API
 - [sqlite3](https://docs.python.org/3/library/sqlite3.html) - для базы данных
 
+## Запуск
+На своем устройстве:
+- `pip install -r requirements.txt`
+- `python -m uvicorn duradora:app [--host <your-host> --port <your-port>]
+Или собрать образ из Dockerfile и запустить его в Docker
+
 ## Эндпоинты
 - GET `/docs` - посмотреть в браузере документацию к API в виде SwaggerUI
 ### Пользователи
