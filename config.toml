@@ -1,0 +1,9 @@
+salt = "ilovedora"
+secret_key = "zakryvayudverkvartiryotkluchayuvsemobily"
+algorithm = "HS256"
+access_token_expire_minutes = 30
+
+db_path = "duradora.db"
+storage_path = "dorage"
+
+admin_password = "ilovedora"
